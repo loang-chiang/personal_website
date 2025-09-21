@@ -1,0 +1,67 @@
+@import "tailwindcss"; 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+.marquee-track {
+  animation: scroll-x 26s linear infinite;
+  will-change: transform;
+}
+@keyframes scroll-x {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Animated background gradient for hero */
+.animated-gradient {
+  background-size: 200% 200%;
+  animation: gradientShift 14s ease infinite;
+}
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.reactive-spot {
+  position: relative;
+}
+.reactive-spot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* soften the effect; try 'multiply' on very light themes */
+  mix-blend-mode: soft-light;
+  background: radial-gradient(
+    320px 320px at var(--mx, 50%) var(--my, 50%),
+    var(--spot-color, rgba(0,0,0,0.15)),
+    transparent 65%
+  );
+  transition: background-position 40ms linear;
+}
