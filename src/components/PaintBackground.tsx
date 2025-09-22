@@ -48,7 +48,7 @@ export default function PaintBackground({
         Math.random() * (canvas.clientHeight || window.innerHeight),
         false
       );
-    }, 800);
+    }, 2000);
 
     function resize() {
       const parent = canvas.parentElement;
@@ -155,22 +155,22 @@ export default function PaintBackground({
 
     // throttle spawns on slow cursor with distance + time gate
     const onMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const now = performance.now();
-
-      const MIN_DIST = 48;  // raise to reduce count
-      const MIN_MS = 140;   // raise to reduce count
-
-      const last = lastSpawnRef.current;
-      const farEnough = !last || Math.hypot(x - last.x, y - last.y) >= MIN_DIST;
-      const oldEnough = !last || (now - last.t) >= MIN_MS;
-
-      if (farEnough && oldEnough) {
-        createPaintDrop(x, y, false);
-        lastSpawnRef.current = { x, y, t: now };
-      }
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const now = performance.now();
+      
+        const MIN_DIST = 150;   // increased from 48 to 80
+        const MIN_MS = 250;    // increased from 140 to 220
+      
+        const last = lastSpawnRef.current;
+        const farEnough = !last || Math.hypot(x - last.x, y - last.y) >= MIN_DIST;
+        const oldEnough = !last || (now - last.t) >= MIN_MS;
+      
+        if (farEnough && oldEnough) {
+          createPaintDrop(x, y, false);
+          lastSpawnRef.current = { x, y, t: now };
+        }
     };
 
     // init
