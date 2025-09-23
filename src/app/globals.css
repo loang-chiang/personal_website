@@ -8,13 +8,17 @@
   --foreground: #171717;
 }
 
-.marquee-track {
-  animation: scroll-x 26s linear infinite;
-  will-change: transform;
+header, .slide-overlay {
+  backface-visibility: hidden;
 }
-@keyframes scroll-x {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+
+.slide-overlay, .header {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.slide-overlay {
+  background-color: var(--accent-color);
 }
 
 @theme inline {

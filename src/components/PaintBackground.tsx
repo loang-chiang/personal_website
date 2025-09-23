@@ -141,7 +141,7 @@ export default function PaintBackground({
       const y = e.clientY - rect.top;
       createPaintDrop(x, y, true);
       // burst (guarded by visibility)
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 1; i++) {
         setTimeout(() => {
           if (!isVisibleRef.current) return;
           createPaintDrop(
