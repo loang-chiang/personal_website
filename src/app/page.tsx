@@ -157,26 +157,77 @@ export default function HomePage() {
 }
 
 /* Intro stripes overlay */
-function OpeningOverlay({ colors }: { colors: string[] }) {
+// function OpeningOverlay({ colors }: { colors: string[] }) {
+//   return (
+//     <motion.div
+//       key="intro"
+//       initial={{ opacity: 1 }}
+//       animate={{ opacity: 0 }}
+//       exit={{ opacity: 0 }}
+//       transition={{ duration: 1.2, ease: "easeOut" }}
+//       className="fixed inset-0 z-[60]"
+//     >
+//       <div className="absolute inset-0 grid" style={{ gridTemplateRows: `repeat(${colors.length}, 1fr)` }}>
+//         {colors.map((c, i) => (
+//           <motion.div
+//             key={i}
+//             initial={{ y: 0 }}
+//             animate={{ y: "-120%" }}
+//             transition={{ duration: 1.4, ease: "easeInOut", delay: i * 0.12 }}
+//             style={{ background: c }}
+//           />
+//         ))}
+//       </div>
+//     </motion.div>
+//   );
+// }
+
+function OpeningOverlay({
+  colors,
+  onDone,
+}: {
+  colors: string[];
+  onDone: () => void;
+}) {
+  // tweakables
+  const DURATION = 1.85;       // total time per stripe (slower overall)
+  const STAGGER  = 0.12;       // delay between stripes
+  const HOLD     = 0.18;       // fraction of the timeline to "hold" near the top
+  const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]; // smooth & gentle start
+
   return (
     <motion.div
       key="intro"
-      initial={{ opacity: 1 }}
-      animate={{ opacity: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 1.2, ease: "easeOut" }}
-      className="fixed inset-0 z-[60]"
+      className="fixed inset-0 z-[60] pointer-events-none"
+      initial={false}
+      animate={{ opacity: 1 }}
     >
-      <div className="absolute inset-0 grid" style={{ gridTemplateRows: `repeat(${colors.length}, 1fr)` }}>
-        {colors.map((c, i) => (
-          <motion.div
-            key={i}
-            initial={{ y: 0 }}
-            animate={{ y: "-120%" }}
-            transition={{ duration: 1.4, ease: "easeInOut", delay: i * 0.12 }}
-            style={{ background: c }}
-          />
-        ))}
+      <div
+        className="absolute inset-0 grid"
+        style={{ gridTemplateRows: `repeat(${colors.length}, 1fr)` }}
+      >
+        {colors.map((c, i) => {
+          const isLast = i === colors.length - 1;
+          return (
+            <motion.div
+              key={i}
+              // stay near the top briefly, then glide and fade near the end
+              animate={{
+                y: ["0%", "-6%", "-86%", "-120%"],
+                opacity: [1, 1, 1, 0],
+              }}
+              transition={{
+                duration: DURATION,
+                ease: EASE,
+                delay: i * STAGGER,
+                //   0 →    HOLD  →    most of slide  → fade & finish
+                times: [0, HOLD, 0.84, 1],
+              }}
+              style={{ background: c }}
+              onAnimationComplete={isLast ? onDone : undefined}
+            />
+          );
+        })}
       </div>
     </motion.div>
   );
