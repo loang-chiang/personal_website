@@ -11,27 +11,63 @@ import { usePalette } from "@/components/PaletteProvider";
 
 export default function HomePage() {
   const { palette, setPalette, p, palettes, ready } = usePalette();
-  const colors = p.colors?.length ? p.colors : [p.accent, p.accentSoft ?? p.accent];
+  const liveColors = p.colors?.length ? p.colors : [p.accent, p.accentSoft ?? p.accent];
 
-  // INTRO (runs once after palette is hydrated)
+  // ---------- INTRO: run on first load, on reload, or when Header flagged "homeIntro" ----------
   const [showIntro, setShowIntro] = useState(false);
-  const introStartedRef = useRef(false);
+  const introColorsRef = useRef<string[] | null>(null);
+  const introRanRef = useRef(false);
+
   useEffect(() => {
-    if (!ready || introStartedRef.current) return;
-    introStartedRef.current = true;
-    setShowIntro(true);
-    const t = setTimeout(() => setShowIntro(false), 1600);
-    return () => clearTimeout(t);
+    if (!ready || introRanRef.current) return;
+
+    // Detect hard reload (modern + Safari fallback)
+    const isReload = (() => {
+      try {
+        const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+        if (nav && "type" in nav) return nav.type === "reload";
+      } catch {}
+      // @ts-ignore deprecated but useful fallback
+      if (performance && performance.navigation) {
+        // @ts-ignore
+        return performance.navigation.type === 1; // 1 = reload
+      }
+      return false;
+    })();
+
+    const fromNav = (() => {
+      try { return sessionStorage.getItem("homeIntro") === "1"; } catch { return false; }
+    })();
+
+    const firstLoad = (() => {
+      try { return sessionStorage.getItem("openingPlayed") !== "1"; } catch { return true; }
+    })();
+
+    if (isReload || fromNav || firstLoad) {
+      introRanRef.current = true;
+      // Freeze colors for the entire animation so palette changes don't pop a stripe
+      introColorsRef.current = [...liveColors];
+      setShowIntro(true);
+      try {
+        sessionStorage.setItem("openingPlayed", "1");
+        sessionStorage.removeItem("homeIntro");
+      } catch {}
+    }
+    // Do NOT depend on liveColors; we want the frozen snapshot above
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
 
-  // Keep CSS var for overlays in sync with palette (prevents color flash)
+  const handleIntroDone = () => setShowIntro(false);
+
+  // Keep CSS var in sync for overlays (prevents color flash)
   useEffect(() => {
     document.documentElement.style.setProperty("--accent", p.accent);
   }, [p.accent]);
 
-  // NAV OVERLAY (single, global)
+  // ---------- NAV OVERLAY (covers page, then pushes) ----------
   const [slideOverlay, setSlideOverlay] = useState(false);
   const router = useRouter();
+  const pushedRef = useRef(false);
 
   const NAV_OVERLAY = {
     initial: { y: "100%" },
@@ -39,17 +75,18 @@ export default function HomePage() {
     exit:    { y: "-100%", transition: { duration: 0.50, ease: [0.16, 1, 0.3, 1] } },
   } as const;
 
-  const pushedRef = useRef(false);
   const goProjects = () => setSlideOverlay(true);
 
   return (
     <div className={`${p.bg} ${p.text} min-h-screen flex flex-col antialiased overflow-x-hidden relative`}>
-      {/* Intro stripes — only after palette is ready; do NOT key by accent */}
-      <AnimatePresence>
-        {ready && showIntro && <OpeningOverlay colors={colors} />}
+      {/* Intro stripes — stable, uses frozen colors; runs on first visit, reload, or when returning home */}
+      <AnimatePresence initial={false}>
+        {showIntro && introColorsRef.current && (
+          <OpeningOverlay key="opening" colors={introColorsRef.current} onDone={handleIntroDone} />
+        )}
       </AnimatePresence>
 
-      {/* One navigation slide overlay (top-level) */}
+      {/* Single navigation overlay */}
       <AnimatePresence initial={false}>
         {slideOverlay && (
           <motion.div
@@ -64,7 +101,7 @@ export default function HomePage() {
               if (phase === "enter" && !pushedRef.current) {
                 pushedRef.current = true;
                 router.push("/projects");
-                // immediately start exit
+                // Immediately trigger exit animation
                 setTimeout(() => setSlideOverlay(false), 0);
               }
             }}
@@ -82,13 +119,9 @@ export default function HomePage() {
       {/* Main */}
       <main className="flex-grow relative">
         {/* Background canvas */}
-        <PaintBackground
-          className="absolute inset-0 z-0"
-          colors={colors}
-          fade={0.05}
-        />
+        <PaintBackground className="absolute inset-0 z-0" colors={liveColors} fade={0.05} />
 
-        {/* Foreground */}
+        {/* Foreground content */}
         <div className="relative z-10">
           <motion.section
             initial={{ opacity: 0, y: 40 }}
@@ -99,11 +132,17 @@ export default function HomePage() {
             <h1 className="mt-6 text-5xl/tight font-extrabold md:text-7xl/tight">
               Hi, I’m{" "}
               <span
-                className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--grad-0)] via-[var(--grad-1)] to-[var(--grad-2)]"
+                className="
+                  bg-clip-text text-transparent
+                  bg-gradient-to-r
+                  from-[var(--grad-0)]
+                  via-[var(--grad-1)]
+                  to-[var(--grad-2)]
+                "
                 style={{
-                  ["--grad-0" as any]: colors[0],
-                  ["--grad-1" as any]: colors[1] ?? colors[0],
-                  ["--grad-2" as any]: colors[2] ?? colors[0],
+                  ["--grad-0" as any]: liveColors[0],
+                  ["--grad-1" as any]: liveColors[1] ?? liveColors[0],
+                  ["--grad-2" as any]: liveColors[2] ?? liveColors[0],
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
@@ -122,7 +161,6 @@ export default function HomePage() {
               transition={{ duration: 0.6, delay: 0.6, type: "spring" }}
               className="mt-8 flex gap-4"
             >
-              {/* Use onClick so we can run overlay first */}
               <FancyButton variant="solid" accent={p.accent} onClick={goProjects}>
                 Projects
               </FancyButton>
@@ -156,31 +194,7 @@ export default function HomePage() {
   );
 }
 
-/* Intro stripes overlay */
-// function OpeningOverlay({ colors }: { colors: string[] }) {
-//   return (
-//     <motion.div
-//       key="intro"
-//       initial={{ opacity: 1 }}
-//       animate={{ opacity: 0 }}
-//       exit={{ opacity: 0 }}
-//       transition={{ duration: 1.2, ease: "easeOut" }}
-//       className="fixed inset-0 z-[60]"
-//     >
-//       <div className="absolute inset-0 grid" style={{ gridTemplateRows: `repeat(${colors.length}, 1fr)` }}>
-//         {colors.map((c, i) => (
-//           <motion.div
-//             key={i}
-//             initial={{ y: 0 }}
-//             animate={{ y: "-120%" }}
-//             transition={{ duration: 1.4, ease: "easeInOut", delay: i * 0.12 }}
-//             style={{ background: c }}
-//           />
-//         ))}
-//       </div>
-//     </motion.div>
-//   );
-// }
+/* ---------------- Opening overlay ---------------- */
 
 function OpeningOverlay({
   colors,
@@ -189,40 +203,21 @@ function OpeningOverlay({
   colors: string[];
   onDone: () => void;
 }) {
-  // tweakables
-  const DURATION = 1.85;       // total time per stripe (slower overall)
-  const STAGGER  = 0.12;       // delay between stripes
-  const HOLD     = 0.18;       // fraction of the timeline to "hold" near the top
-  const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]; // smooth & gentle start
+  const DURATION = 1.85;
+  const STAGGER = 0.12;
+  const HOLD = 0.18;
+  const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
   return (
-    <motion.div
-      key="intro"
-      className="fixed inset-0 z-[60] pointer-events-none"
-      initial={false}
-      animate={{ opacity: 1 }}
-    >
-      <div
-        className="absolute inset-0 grid"
-        style={{ gridTemplateRows: `repeat(${colors.length}, 1fr)` }}
-      >
+    <motion.div className="fixed inset-0 z-[60] pointer-events-none" initial={false} animate={{ opacity: 1 }}>
+      <div className="absolute inset-0 grid" style={{ gridTemplateRows: `repeat(${colors.length}, 1fr)` }}>
         {colors.map((c, i) => {
           const isLast = i === colors.length - 1;
           return (
             <motion.div
               key={i}
-              // stay near the top briefly, then glide and fade near the end
-              animate={{
-                y: ["0%", "-6%", "-86%", "-120%"],
-                opacity: [1, 1, 1, 0],
-              }}
-              transition={{
-                duration: DURATION,
-                ease: EASE,
-                delay: i * STAGGER,
-                //   0 →    HOLD  →    most of slide  → fade & finish
-                times: [0, HOLD, 0.84, 1],
-              }}
+              animate={{ y: ["0%", "-6%", "-86%", "-120%"], opacity: [1, 1, 1, 0] }}
+              transition={{ duration: DURATION, ease: EASE, delay: i * STAGGER, times: [0, HOLD, 0.84, 1] }}
               style={{ background: c }}
               onAnimationComplete={isLast ? onDone : undefined}
             />
@@ -232,3 +227,4 @@ function OpeningOverlay({
     </motion.div>
   );
 }
+

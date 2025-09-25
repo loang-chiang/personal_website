@@ -31,6 +31,11 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
   const router = useRouter();
   const pathname = usePathname();
 
+  // keep CSS var in sync so overlay always matches palette
+  useEffect(() => {
+    document.documentElement.style.setProperty("--accent", accent);
+  }, [accent]);
+
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
 
   // overlay state
@@ -38,14 +43,15 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
   const navTargetRef = useRef<string | null>(null);
   const navLockRef = useRef(false);
 
+  // kill any leftover overlay on route change
   useEffect(() => {
-    // On any route change, force-kill overlay just in case
     if (overlayOn) {
       setOverlayOn(false);
       navLockRef.current = false;
       navTargetRef.current = null;
     }
-  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const pathFromHref = (href: string) => {
     try {
@@ -59,13 +65,27 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
   const isSamePath = (href: string) => pathFromHref(href) === pathname;
 
   function handleNavClick(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
-    if (!isInternalPath(href)) return;       // external/# → no overlay
-    if (isSamePath(href)) return;            // same page → no overlay
+    // Let external and hash links behave normally
+    if (!href.startsWith("/")) return;
+    const toPath = pathFromHref(href);
+
+    // already on this page → no overlay
+    if (toPath === pathname) return;
+
+    // going home → let Home run its own intro, skip header overlay
+    if (toPath === "/") {
+      try { sessionStorage.setItem("homeIntro", "1"); } catch {}
+      return; // do NOT preventDefault
+    }
+
+    // internal route (non-home): run cover overlay
+    if (!isInternalPath(href)) return; // '/#something' → treat as hash, no overlay
     e.preventDefault();
-    if (navLockRef.current) return;          // avoid double clicks
+    if (navLockRef.current) return;    // debounce during animation
     navLockRef.current = true;
+
     navTargetRef.current = href;
-    setOverlayOn(true);                      // slide IN; push on complete
+    setOverlayOn(true);                 // slide IN; push on complete
   }
 
   return (
@@ -77,17 +97,16 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
             key="route-slide-overlay"
             className="fixed inset-0 z-[999] pointer-events-none"
             style={{ backgroundColor: `var(--accent, ${accent})` }}
-            initial={{ y: "100%" }}     // offscreen bottom
-            animate={{ y: 0 }}          // cover the page
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ y: "100%" }} // offscreen bottom
+            animate={{ y: 0 }}      // cover the page
+            transition={OVERLAY_IN}
             onAnimationComplete={() => {
               const href = navTargetRef.current;
               if (!href) return;
               try { sessionStorage.setItem("routeCovered", "1"); } catch {}
               navTargetRef.current = null;
-              router.push(href);        // go to destination; this component will unmount
-              // NOTE: we do NOT setOverlayOn(false) and we do NOT provide exit here.
-              // The cover just unmounts abruptly because the page is leaving—that’s fine.
+              router.push(href);    // navigate; page unmounts this overlay
+              // no exit animation here; new page will reveal itself if desired
             }}
           />
         )}
@@ -103,8 +122,13 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
             <CircleMark color={accent} size={32} />
-            {/* Home link: no overlay handler so the home intro can run */}
-            <Link href="/" className="font-semibold tracking-wide hover:underline">
+
+            {/* Brand: set homeIntro so the Home page plays its intro; no overlay here */}
+            <Link
+              href="/"
+              className="font-semibold tracking-wide hover:underline"
+              onClick={() => { try { sessionStorage.setItem("homeIntro", "1"); } catch {} }}
+            >
               <motion.span whileHover={{ scale: 1.05, transition: { type: "spring", stiffness: 300 } }}>
                 Loang Chiang :)
               </motion.span>
@@ -128,13 +152,19 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
                 onMouseLeave={() => setHoveredNav(null)}
                 onClick={(e) => handleNavClick(e, item.href)}
               >
+                {/* hover fill */}
                 <motion.div
                   className="absolute inset-0 rounded-lg"
                   style={{ backgroundColor: accent }}
                   initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: hoveredNav === item.name ? 1 : 0, opacity: hoveredNav === item.name ? 0.1 : 0 }}
+                  animate={{
+                    scale: hoveredNav === item.name ? 1 : 0,
+                    opacity: hoveredNav === item.name ? 0.12 : 0,
+                  }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
                 />
+
+                {/* label */}
                 <motion.span
                   className="relative z-10"
                   animate={{ color: hoveredNav === item.name ? accent : "inherit" }}
@@ -142,6 +172,8 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
                 >
                   {item.name}
                 </motion.span>
+
+                {/* underline */}
                 <motion.div
                   className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
                   style={{ backgroundColor: accent }}
@@ -153,6 +185,7 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
             ))}
           </nav>
 
+          {/* Palette selector */}
           <motion.select
             value={palette}
             onChange={(e) => setPalette(e.target.value)}
@@ -170,7 +203,9 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
             }}
           >
             {palettes.map((k) => (
-              <option key={k} value={k}>{k}</option>
+              <option key={k} value={k}>
+                {k}
+              </option>
             ))}
           </motion.select>
         </div>
@@ -178,6 +213,7 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
     </>
   );
 }
+
 
 
 
