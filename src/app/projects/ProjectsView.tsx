@@ -7,11 +7,10 @@ import Header from "@/components/Header";
 import FancyButton from "@/components/FancyButton";
 import ProjectCard, { Project } from "@/components/ProjectCard";
 import { usePalette } from "@/components/PaletteProvider";
+import Footer from "@/components/Footer";
 
 export default function ProjectsView() {
   const { palette, setPalette, p, palettes } = usePalette();
-
-  // match About's overlay behavior (cover, then slide up)
   const [slideOverlay, setSlideOverlay] = useState(true);
 
   const pageVariants = {
@@ -22,26 +21,74 @@ export default function ProjectsView() {
 
   const projects: Project[] = [
     {
+      title: "PVDX WebApp",
+      highlight: "Educational app to spark love for space",
+      description:
+        "An educational platform enabling K–12 students to interact with upcoming PVDX satellite through live data updates and block coding. In collaboration with Brown Space Engineering.",
+      image: "/projects/pvdx.png",
+      status: "in-progress",
+    },
+    {
       title: "Arcademia",
-      highlight: "Real-time quiz play from uploaded notes",
+      highlight: "Gamified note-taking!",
       description:
-        "A note-driven quiz platform for friends/classes. React/Next.js frontend with websockets, FastAPI backend.",
-      repo: "https://github.com/yourname/arcademia",
-      image: "/projects/arcademia.jpg",
+        "Web platform that allows you to upload notes and uses AI to auto-generate question banks and play live minigames with friends via rooms and fast scoring to improve content retention. Built for Hack@Brown 2025",
+      image: "/projects/arcademia.png",
     },
     {
-      title: "Cybersecurity Maturity Dashboard",
-      highlight: "Exec dashboard for CSF/CIS control tracking",
+      title: "AlbumRater",
+      highlight: "Your music, ranked cleanly",
       description:
-        "Power BI + Python automations to visualize maturity and map evidence across standards.",
-      image: "/projects/cyber-dashboard.jpg",
+        "Album tracker connected to the Spotify API to organize your album ratings as reviews. Also features user profiles and a general feed for seeing other users' activity",
+      repo: "https://github.com/loang-chiang/AlbumRater",
+      image: "/projects/albumrater.png",
     },
     {
-      title: "WeensyOS Enhancements",
-      highlight: "Ref-counted pages & safer fork/exit flow",
+      title: "DigiTBR",
+      highlight: "Reading list organizer",
       description:
-        "Memory mgmt and kernel bug fixes: kalloc/kfree, fork/exit, shared page refcounts.",
-      image: "/projects/weensyos.jpg",
+        "Personal TBR tracker that lets you add, delete, sort, and organize your future book adventures.",
+      repo: "https://github.com/loang-chiang/DigiTBR",
+      image: "/projects/digitbr.png",
+    },
+    {
+      title: "Brown Student Radio Website",
+      highlight: "Schedule, shows, archives",
+      description:
+        "A fresh, accessible redesign for BSR with live updates, schedule browsing, and DJ blogs. Project for Fullstack@Brown Fall 2024.",
+      repo: "https://brownstudentradio.vercel.app/",
+      image: "/projects/radio.png",
+    },
+    {
+      title: "Project OLEEP",
+      highlight: "Nonprofit resources portal",
+      description:
+        "Central hub for mentorship resources, docs, and scheduling to streamline volunteer workflows. Project for Fullstack@Brown Spring 2025.",
+      repo: "https://github.com/fullstackatbrown/project-oleep",
+      image: "/projects/oleep.png",
+    },
+    {
+      title: "This website!",
+      highlight: "Personal website",
+      description:
+        "Portfolio website to showcase projects, include information about myself, and make contact easier.",
+      image: "/projects/personal_website.png",
+    },
+    {
+      title: "Sketch!",
+      highlight: "Tiny drawing playground",
+      description:
+        "A playful canvas for quick doodles; simple but very fun!",
+      repo: "https://github.com/loang-chiang/Sketch",
+      image: "/projects/sketch.png",
+    },
+    {
+      title: "Michi",
+      highlight: "Tic-tac-toe but make it cats!",
+      description:
+        "Cat-themed tic-tac-toe that tracks wins per player and allows for a simple, good time",
+      repo: "https://github.com/loang-chiang/Michi",
+      image: "/projects/michi.png",
     },
   ];
 
@@ -52,13 +99,13 @@ export default function ProjectsView() {
         {slideOverlay && (
           <motion.div
             key="slide-overlay-projects"
-            initial={{ y: 0 }}                // fully covering
-            animate={{ y: "-100%" }}          // slide up to reveal
+            initial={{ y: 0 }}
+            animate={{ y: "-100%" }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6, ease: "easeInOut" }}
             className="fixed inset-0 z-50 pointer-events-none"
-            style={{ backgroundColor: "var(--accent)" }} // CSS var prevents color flash
-            onAnimationComplete={() => setSlideOverlay(false)} // unmount when done
+            style={{ backgroundColor: "var(--accent)" }}
+            onAnimationComplete={() => setSlideOverlay(false)}
           />
         )}
       </AnimatePresence>
@@ -78,10 +125,10 @@ export default function ProjectsView() {
           exit="exit"
           className="flex-grow"
         >
-          <section className="mx-auto max-w-6xl px-6 py-16">
+          <section className="mx-auto w-full max-w-6xl py-16 px-6 sm:px-10 md:px-14 lg:px-18 xl:px-24">
             <h1 className="text-4xl font-bold">Projects</h1>
 
-            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-8 grid gap-y-12 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 sm:gap-x-8 md:gap-x-10 lg:gap-x-12">
               {projects.map((proj) => (
                 <ProjectCard key={proj.title} project={proj} />
               ))}
@@ -95,34 +142,12 @@ export default function ProjectsView() {
           </section>
         </motion.main>
 
-        <footer
-          className="border-t border-white/20"
-          style={{ backgroundColor: "var(--header-bg, white)", borderColor: "var(--header-border, #ddd)" }}
-        >
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6 text-sm opacity-70">
-            <p>© {new Date().getFullYear()} Loang Chiang. Built with React + Tailwind.</p>
-            <div className="flex items-center gap-4">
-              <a
-                href="#"
-                className="relative transition-all duration-200 hover:opacity-100 after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-current hover:after:w-full after:transition-all after:duration-300"
-                style={{ color: p.accent }}
-              >
-                GitHub
-              </a>
-              <a
-                href="#"
-                className="relative transition-all duration-200 hover:opacity-100 after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-current hover:after:w-full after:transition-all after:duration-300"
-                style={{ color: p.accent }}
-              >
-                LinkedIn
-              </a>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </>
   );
 }
+
 
 
 

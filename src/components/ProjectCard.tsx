@@ -1,142 +1,134 @@
+// src/components/ProjectCard.tsx
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import React, { useState } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import * as React from "react";
 
 export type Project = {
   title: string;
-  description: string;
-  href?: string;        // external link
-  repo?: string;        // github link
-  image?: string;       // /public/* path
-  highlight?: string;   // 1-liner achievement
+  highlight?: string;
+  description?: string;
+  image: string;
+  repo?: string;
+  demo?: string;
+  status?: "in-progress"; // only status supported
 };
 
-export default function ProjectCard({ project }: { project: Project }) {
-  const [open, setOpen] = useState(false);
+export default function ProjectCard({
+  project,
+  accent,
+  className,
+}: {
+  project: Project;
+  accent?: string;
+  className?: string;
+}) {
+  const ACCENT = accent ?? "var(--accent, #888)";
+  const primaryLink = project.demo || project.repo;
 
   return (
     <motion.article
-      layout
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-20% 0px -20% 0px" }}
-      whileHover={{ y: -4, scale: 1.01 }}
-      transition={{ type: "spring", stiffness: 280, damping: 20 }}
-      className="group relative overflow-hidden rounded-2xl border bg-white/70 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow"
-      style={{ borderColor: "var(--card-border, #e5e7eb)" }}
+      whileHover={{ y: -4 }}
+      transition={{ type: "spring", stiffness: 300, damping: 22 }}
+      className={`group relative ${className ?? ""}`}
     >
-      {/* Cover */}
-      <div className="relative h-44 w-full overflow-hidden">
-        {project.image ? (
-          <Image
-            src={project.image}
-            alt={project.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 50vw"
-            priority={false}
-          />
-        ) : (
-          <div
-            className="h-full w-full"
-            style={{
-              background:
-                "linear-gradient(135deg, var(--accent,#D95F59) 0%, rgba(0,0,0,0.08) 100%)",
-            }}
-          />
-        )}
-
-        {/* soft top gradient */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/10 via-black/0 to-black/5" />
-      </div>
-
-      {/* Content */}
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-4">
-          <h3 className="text-lg font-semibold leading-tight">{project.title}</h3>
-          {project.period && (
-            <span className="shrink-0 rounded-full bg-[color:var(--accent,#D95F59)]/10 px-2 py-0.5 text-[11px] font-medium text-[color:var(--accent,#D95F59)]">
-              {project.period}
-            </span>
-          )}
-        </div>
-
-        {project.highlight && (
-          <p className="mt-1 text-[13px] text-emerald-700/90 dark:text-emerald-600">
-            {project.highlight}
-          </p>
-        )}
-
-        <p className="mt-2 text-sm opacity-80 line-clamp-3">
-          {project.description}
-        </p>
-
-        {/* Actions */}
-        <div className="mt-4 flex items-center gap-3">
-          {project.href && (
-            <a
-              href={project.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm font-medium underline"
-              style={{ color: "var(--accent,#D95F59)" }}
-            >
-              View →
-            </a>
-          )}
-          {project.repo && (
-            <a
-              href={project.repo}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm font-medium underline"
-              style={{ color: "var(--accent,#D95F59)" }}
-            >
-              GitHub
-            </a>
-          )}
-
-          <button
-            onClick={() => setOpen((v) => !v)}
-            className="ml-auto text-sm font-medium"
-            style={{ color: "var(--accent,#D95F59)" }}
-          >
-            {open ? "Less" : "More"}
-          </button>
-        </div>
-
-        {/* Expandable details */}
-        <AnimatePresence initial={false}>
-          {open && (
-            <motion.div
-              key="more"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.25 }}
-              className="mt-3 border-t pt-3 text-sm opacity-80"
-              style={{ borderColor: "var(--card-border, #eee)" }}
-            >
-              <ul className="list-disc pl-5 leading-relaxed">
-                <li>Tech stack highlights and key challenges solved.</li>
-                <li>Impact/metrics if applicable.</li>
-                <li>What you’d like to improve or ship next.</li>
-              </ul>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* subtle glow on hover */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+      {/* soft glow on hover */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -inset-2 rounded-3xl opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-60"
         style={{
-          boxShadow: "inset 0 0 0 1px var(--accent,#D95F59)",
-          borderRadius: 16,
-        }}
+          background: `radial-gradient(220px 220px at 50% 0%, ${ACCENT} 0%, transparent 65%)`,
+        } as React.CSSProperties}
       />
+
+      {/* gradient border frame */}
+      <div
+        className="relative rounded-2xl p-[1px] overflow-hidden"
+        style={{ background: `linear-gradient(180deg, ${ACCENT}, transparent 60%)` } as React.CSSProperties}
+      >
+        <div className="rounded-2xl bg-white/70 dark:bg-white/5 backdrop-blur-sm border border-white/40 dark:border-white/10 overflow-hidden">
+          {/* image (no shadows/overlays) */}
+          <div className="relative w-full aspect-[6/5] overflow-hidden">
+            <motion.div
+              className="absolute inset-0"
+              whileHover={{ scale: 1.03 }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <Image src={project.image} alt={project.title} fill className="object-cover" />
+            </motion.div>
+
+            {/* single status */}
+            {project.status === "in-progress" && (
+              <span
+                className="absolute top-3 left-3 z-10 rounded-md px-2 py-1 text-[11px] font-medium"
+                style={{
+                  background: "rgba(245,158,11,.95)", // amber
+                  color: "#111",
+                  border: "1px solid rgba(245,158,11,.6)",
+                  backdropFilter: "blur(4px)",
+                }}
+              >
+                In progress
+              </span>
+            )}
+
+            {/* quick links */}
+            {(project.demo || project.repo) && (
+              <div className="absolute top-3 right-3 z-10 flex gap-2">
+                {project.demo && <Chip href={project.demo} label="Demo" accent={ACCENT} />}
+              </div>
+            )}
+          </div>
+
+          {/* body */}
+          <div className="p-4">
+            <h3 className="text-base/5 font-semibold">
+              {primaryLink ? (
+                <Link href={primaryLink} className="relative inline-block">
+                  {project.title}
+                  <span
+                    aria-hidden
+                    className="absolute -bottom-0.5 left-0 h-[2px] w-0 transition-all duration-300 group-hover:w-full"
+                    style={{ background: ACCENT as any}}
+                  />
+                </Link>
+              ) : (
+                project.title
+              )}
+            </h3>
+
+            {project.highlight && <i className="mt-1 text-sm opacity-80" style={{ color: ACCENT as any }}>{project.highlight}</i>}
+            {project.description && <p className="mt-3 text-[13px] opacity-75">{project.description}</p>}
+          </div>
+        </div>
+      </div>
     </motion.article>
   );
 }
+
+function Chip({ href, label, accent }: { href: string; label: string; accent: string }) {
+  return (
+    <motion.a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="rounded-lg px-2.5 py-1 text-xs font-medium"
+      style={{
+        background: accent as any,
+        color: "#fff",
+        border: `1px solid color-mix(in srgb, ${accent} 40%, transparent)`,
+      } as React.CSSProperties}
+      initial={{ opacity: 0, y: -4 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.22, ease: "easeOut" }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {label}
+    </motion.a>
+  );
+}
+

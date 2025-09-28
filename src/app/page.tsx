@@ -1,4 +1,3 @@
-// app/page.tsx
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -8,12 +7,13 @@ import Header from "@/components/Header";
 import PaintBackground from "@/components/PaintBackground";
 import FancyButton from "@/components/FancyButton";
 import { usePalette } from "@/components/PaletteProvider";
+import Footer from "@/components/Footer";
 
 export default function HomePage() {
   const { palette, setPalette, p, palettes, ready } = usePalette();
   const liveColors = p.colors?.length ? p.colors : [p.accent, p.accentSoft ?? p.accent];
 
-  // ---------- INTRO: run on first load, on reload, or when Header flagged "homeIntro" ----------
+  // ---------------- INTRO: first visit, reload, or when returning home ----------------
   const [showIntro, setShowIntro] = useState(false);
   const introColorsRef = useRef<string[] | null>(null);
   const introRanRef = useRef(false);
@@ -27,9 +27,7 @@ export default function HomePage() {
         const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
         if (nav && "type" in nav) return nav.type === "reload";
       } catch {}
-      // @ts-ignore deprecated but useful fallback
       if (performance && performance.navigation) {
-        // @ts-ignore
         return performance.navigation.type === 1; // 1 = reload
       }
       return false;
@@ -45,7 +43,7 @@ export default function HomePage() {
 
     if (isReload || fromNav || firstLoad) {
       introRanRef.current = true;
-      // Freeze colors for the entire animation so palette changes don't pop a stripe
+      // Freeze colors for this entire run so palette changes don't spawn a stray stripe
       introColorsRef.current = [...liveColors];
       setShowIntro(true);
       try {
@@ -64,46 +62,39 @@ export default function HomePage() {
     document.documentElement.style.setProperty("--accent", p.accent);
   }, [p.accent]);
 
-  // ---------- NAV OVERLAY (covers page, then pushes) ----------
-  const [slideOverlay, setSlideOverlay] = useState(false);
+  // ---------------- NAV OVERLAY (cover only, then push) ----------------
   const router = useRouter();
-  const pushedRef = useRef(false);
+  const [slideOverlay, setSlideOverlay] = useState(false);
 
-  const NAV_OVERLAY = {
-    initial: { y: "100%" },
-    enter:   { y: 0,       transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } },
-    exit:    { y: "-100%", transition: { duration: 0.50, ease: [0.16, 1, 0.3, 1] } },
-  } as const;
+  const OVERLAY_IN = { duration: 0.6, ease: [0.16, 1, 0.3, 1] } as const;
 
-  const goProjects = () => setSlideOverlay(true);
+  const goProjects = () => {
+    setSlideOverlay(true);
+  };
 
   return (
     <div className={`${p.bg} ${p.text} min-h-screen flex flex-col antialiased overflow-x-hidden relative`}>
-      {/* Intro stripes — stable, uses frozen colors; runs on first visit, reload, or when returning home */}
+      {/* Intro stripes — stable, frozen colors; runs on first visit/reload or when flagged from Header */}
       <AnimatePresence initial={false}>
         {showIntro && introColorsRef.current && (
           <OpeningOverlay key="opening" colors={introColorsRef.current} onDone={handleIntroDone} />
         )}
       </AnimatePresence>
 
-      {/* Single navigation overlay */}
-      <AnimatePresence initial={false}>
+      {/* Route cover used by the "Projects" button (mirrors Header behavior) */}
+      <AnimatePresence>
         {slideOverlay && (
           <motion.div
-            key="nav-slide-overlay"
-            className="fixed inset-0 z-50"
+            key="home-route-cover"
+            className="fixed inset-0 z-50 pointer-events-none"
             style={{ backgroundColor: "var(--accent)" }}
-            variants={NAV_OVERLAY}
-            initial="initial"
-            animate="enter"
-            exit="exit"
-            onAnimationComplete={(phase) => {
-              if (phase === "enter" && !pushedRef.current) {
-                pushedRef.current = true;
-                router.push("/projects");
-                // Immediately trigger exit animation
-                setTimeout(() => setSlideOverlay(false), 0);
-              }
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            transition={OVERLAY_IN}
+            onAnimationComplete={() => {
+              try { sessionStorage.setItem("routeCovered", "1"); } catch {}
+              router.push("/projects");
+              // No local exit — Projects page will do the reveal.
             }}
           />
         )}
@@ -161,7 +152,13 @@ export default function HomePage() {
               transition={{ duration: 0.6, delay: 0.6, type: "spring" }}
               className="mt-8 flex gap-4"
             >
-              <FancyButton variant="solid" accent={p.accent} onClick={goProjects}>
+              {/* Match Header behavior: prefetch + cover-only overlay */}
+              <FancyButton
+                variant="solid"
+                accent={p.accent}
+                onMouseEnter={() => router.prefetch("/projects")}
+                onClick={goProjects}
+              >
                 Projects
               </FancyButton>
 
@@ -173,23 +170,7 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer
-        className="border-t border-white/20"
-        style={{ backgroundColor: "var(--header-bg, white)", borderColor: "var(--header-border, #ddd)" }}
-      >
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6 text-sm opacity-70">
-          <p>© {new Date().getFullYear()} Loang Chiang. Built with React + Tailwind.</p>
-          <div className="flex items-center gap-2">
-            <a href="#" className="underline transition-colors duration-200 hover:text-blue-600" style={{ color: p.accent }}>
-              GitHub
-            </a>
-            <a href="#" className="underline transition-colors duration-200 hover:text-blue-600" style={{ color: p.accent }}>
-              LinkedIn
-            </a>
-          </div>
-        </div>
-      </footer>
+      <Footer></Footer>
     </div>
   );
 }

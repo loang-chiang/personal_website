@@ -139,7 +139,7 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
             {[
               { name: "Projects", href: "/projects" },
               { name: "About", href: "/about" },
-              { name: "Contact", href: "/#contact" }, // hash = no overlay
+              { name: "Contact", href: "/contact" }, // hash = no overlay
             ].map((item) => (
               <Link
                 key={item.name}

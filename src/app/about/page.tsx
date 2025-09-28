@@ -9,26 +9,21 @@ import { usePalette } from "@/components/PaletteProvider";
 import SectionCard from "@/components/SectionCard";
 import Timeline, { TimelineItem } from "@/components/Timeline";
 import ChipList from "@/components/ChipList";
-import ClassesSection, { TermGroup } from "@/components/ClassesSection";
+import CoursesSection, { Course } from "@/components/CoursesSection";
+import Footer from "@/components/Footer";
 
 export default function AboutPage() {
   const { palette, setPalette, p, palettes } = usePalette();
   const colors = p.colors;
 
-  // 👇 ADD THESE (they depend on palette and p.accent)
+  // Vintage tints
   const isVintage = palette === "Vintage";
-  // soft tint for the outer card surface
   const cardTint = isVintage
-    ? { background: `linear-gradient(180deg, ${p.accent}14 0%, ${p.accent}0D 100%)` } // ~8–5% accent
+    ? { background: `linear-gradient(180deg, ${p.accent}14 0%, ${p.accent}0D 100%)` }
     : undefined;
-  // inner item surface (timeline item cards, etc.)
-  const innerSurface = isVintage
-    ? `color-mix(in srgb, ${p.accent} 7%, white)` // gentle, warm surface
-    : undefined;
+  const innerSurface = isVintage ? `color-mix(in srgb, ${p.accent} 7%, white)` : undefined;
 
   const [slideOverlay, setSlideOverlay] = useState(true);
-
-  // slide-up reveal on mount
   useEffect(() => {
     const t = setTimeout(() => setSlideOverlay(false), 600);
     return () => clearTimeout(t);
@@ -106,21 +101,20 @@ export default function AboutPage() {
     "Bonner Community Fellow Class of '28",
   ];
 
-  const classes: TermGroup[] = [
-    {
-      term: "Fall 2024",
-      courses: [
-        { code: "CSCI 0320", name: "Software Engineering", tag: "Projects, team" },
-        { code: "COGS 0110", name: "Cognitive Neuroscience", tag: "Cortex & systems" },
-      ],
-    },
-    {
-      term: "Spring 2025",
-      courses: [
-        { code: "CSCI 0330", name: "Intro to Computer Systems", tag: "C, memory, OS" },
-        { code: "DATA 0200", name: "Data Fluency", tag: "Stats, viz" },
-      ],
-    },
+  // New flat courses list (no terms)
+  const courses: Course[] = [
+    { code: "CSCI 0190", name: "Accelerated Intro to CS", category: "CS" },
+    { code: "DATA 0150", name: "Data Science Princples", category: "CS" },
+    { code: "MATH 0190", name: "Calculus II", category: "Math" },
+    { code: "LING 0100", name: "Intro to Linguistics", category: "CogSci" },
+    { code: "APMA1650", name: "Statistical Inference", category: "Math" },
+    { code: "CSCI0410", name: "Intro to AI", category: "CS" },
+    { code: "CSCI0300", name: "Fundamentals of Computer Systems", category: "CS" },
+    { code: "MATH0540", name: "Linear Algebra with Theory", category: "Math" },
+    { code: "CSCI1302", name: "Sociotechnical Systems and HCI", category: "CS" },
+    { code: "CSCI0500", name: "Data Structures and Algorithms", category: "CS" },
+    { code: "CPSY0800", name: "Language and the Mind", category: "CogSci" },
+    { code: "ENGN0090", name: "Management of Industrial Organizations", category: "Other" },
   ];
 
   return (
@@ -158,7 +152,6 @@ export default function AboutPage() {
           {/* Hero */}
           <section className="px-2">
             <div className="mx-auto grid items-center gap-10 max-w-4xl md:grid-cols-[240px_1fr]">
-              {/* Left: Photo */}
               <div
                 className="relative w-[240px] aspect-[3/4] overflow-hidden rounded-2xl border shadow justify-self-center md:justify-self-end"
                 style={{ borderColor: p.accent }}
@@ -166,7 +159,6 @@ export default function AboutPage() {
                 <Image src="/me.jpg" alt="Photo of Loang" fill className="object-cover" priority />
               </div>
 
-              {/* Right: Bio */}
               <div className="text-center md:text-left md:max-w-[560px] justify-self-center md:justify-self-start">
                 <span
                   className="inline-block rounded-full border px-3 py-1 text-xs mb-3"
@@ -185,7 +177,7 @@ export default function AboutPage() {
                       WebkitTextFillColor: "transparent",
                     }}
                   >
-                    Loang
+                    Loang Chiang
                   </span>
                 </h1>
                 <p className="mt-4 opacity-80">
@@ -206,7 +198,7 @@ export default function AboutPage() {
             </div>
           </section>
 
-          {/* Experience + Highlights (rebalanced) */}
+          {/* Experience + Highlights */}
           <section className="mt-16 grid gap-8 lg:grid-cols-12">
             <SectionCard
               title="Experience"
@@ -214,82 +206,41 @@ export default function AboutPage() {
               cardClass={p.card}
               cardBorderClass={p.cardBorder}
               className="lg:col-span-8"
-              style={cardTint} // ← soft tinted surface for Vintage
+              style={cardTint}
             >
-              <Timeline items={exp} accent={p.accent} surface={innerSurface} /> {/* ← tinted item cards */}
+              <Timeline items={exp} accent={p.accent} surface={innerSurface} />
             </SectionCard>
 
             <SectionCard
-                title="Highlights"
-                accent={p.accent}
-                cardClass={p.card}
-                cardBorderClass={p.cardBorder}
-                className="lg:col-span-4 lg:sticky lg:top-24"
-                style={cardTint}
-            >
-                <ChipList items={highlights} accent={p.accent} size="md" columns={1} />
-            </SectionCard>
-          </section>
-
-          {/* Classes */}
-          <ClassesSection
-            groups={classes}
-            accent={p.accent}
-            cardClass={p.card}
-            cardBorderClass={p.cardBorder}
-          />
-
-          {/* Contact */}
-          <section id="contact" className="mt-16">
-            <SectionCard
-              title="Contact"
+              title="Highlights"
               accent={p.accent}
               cardClass={p.card}
               cardBorderClass={p.cardBorder}
-              delay={0.1}
+              className="lg:col-span-4 lg:sticky lg:top-24"
+              style={cardTint}
             >
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <a
-                  className="rounded-xl px-4 py-2 text-sm font-medium text-white shadow-md"
-                  style={{ background: p.accent }}
-                  href="mailto:you@domain.com"
-                >
-                  Email me
-                </a>
-                <button
-                  onClick={() => {
-                    const email = "you@domain.com";
-                    if (navigator?.clipboard) navigator.clipboard.writeText(email);
-                    const el = document.getElementById("copy-email-chip");
-                    el?.animate(
-                      [{ boxShadow: `0 0 0 0 ${p.accent}44` }, { boxShadow: `0 0 0 8px ${p.accent}00` }],
-                      { duration: 520, easing: "ease-out" }
-                    );
-                  }}
-                  id="copy-email-chip"
-                  className="rounded-xl border px-4 py-2 text-sm"
-                  style={{ borderColor: p.accent, color: p.accent }}
-                >
-                  Copy email
-                </button>
-                <a
-                  href="#"
-                  className="rounded-xl border px-4 py-2 text-sm transition-transform hover:-translate-y-0.5"
-                  style={{ borderColor: `${p.accent}33` }}
-                >
-                  GitHub
-                </a>
-                <a
-                  href="#"
-                  className="rounded-xl border px-4 py-2 text-sm transition-transform hover:-translate-y-0.5"
-                  style={{ borderColor: `${p.accent}33` }}
-                >
-                  LinkedIn
-                </a>
-              </div>
+              <ChipList items={highlights} accent={p.accent} size="md" columns={1} />
             </SectionCard>
           </section>
+
+          {/* Courses (no dates, color-coded by category) */}
+          <div className="mt-8">
+            <CoursesSection
+                title="Courses"
+                courses={courses}
+                accent={p.accent}
+                cardClass={p.card}
+                cardBorderClass={p.cardBorder}
+                paletteColors={p.colors}
+                style={cardTint}
+                innerSurface={innerSurface}
+                cols={2}
+            />
+          </div>
+
         </motion.main>
+
+        <Footer></Footer>
       </div>
     </>
   );
