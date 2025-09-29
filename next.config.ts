@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const repo = 'personal_website';
+const repo = 'loang-chiang.github.io';  // ← Change this to match your new repo name
 const isProd = process.env.NODE_ENV === 'production';
 const basePath = isProd ? `/${repo}` : '';
 
