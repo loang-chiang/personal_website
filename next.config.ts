@@ -1,16 +1,17 @@
 /** @type {import('next').NextConfig} */
-const repo = 'my-site';
+const repo = 'personal_website';
 const isProd = process.env.NODE_ENV === 'production';
+const basePath = isProd ? `/${repo}` : '';
 
 module.exports = {
   output: 'export',
   images: { unoptimized: true },
   trailingSlash: true,
-  basePath: isProd && repo ? `/${repo}` : '',
-  assetPrefix: isProd && repo ? `/${repo}/` : '',
+  basePath: basePath,
+  assetPrefix: basePath,
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   env: {
-    NEXT_PUBLIC_BASE_PATH: isProd && repo ? `/${repo}` : '',
+    NEXT_PUBLIC_BASE_PATH: basePath,
   },
 };

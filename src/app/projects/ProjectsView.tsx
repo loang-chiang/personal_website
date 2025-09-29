@@ -25,7 +25,7 @@ export default function ProjectsView() {
       highlight: "Educational app to spark love for space",
       description:
         "An educational platform enabling K–12 students to interact with upcoming PVDX satellite through live data updates and block coding. In collaboration with Brown Space Engineering.",
-      image: "/projects/pvdx.png",
+      image: `${process.env.NEXT_PUBLIC_BASE_PATH}/projects/pvdx.png`,
       status: "in-progress",
     },
     {
@@ -33,7 +33,7 @@ export default function ProjectsView() {
       highlight: "Gamified note-taking!",
       description:
         "Web platform that allows you to upload notes and uses AI to auto-generate question banks and play live minigames with friends via rooms and fast scoring to improve content retention. Built for Hack@Brown 2025",
-      image: "/projects/arcademia.png",
+      image: `${process.env.NEXT_PUBLIC_BASE_PATH}/projects/arcademia.png`,
     },
     {
       title: "AlbumRater",
@@ -41,7 +41,7 @@ export default function ProjectsView() {
       description:
         "Album tracker connected to the Spotify API to organize your album ratings as reviews. Also features user profiles and a general feed for seeing other users' activity",
       repo: "https://github.com/loang-chiang/AlbumRater",
-      image: "/projects/albumrater.png",
+      image: `${process.env.NEXT_PUBLIC_BASE_PATH}/projects/albumrater.png`,
     },
     {
       title: "DigiTBR",
@@ -49,7 +49,7 @@ export default function ProjectsView() {
       description:
         "Personal TBR tracker that lets you add, delete, sort, and organize your future book adventures.",
       repo: "https://github.com/loang-chiang/DigiTBR",
-      image: "/projects/digitbr.png",
+      image: `${process.env.NEXT_PUBLIC_BASE_PATH}/projects/digitbr.png`,
     },
     {
       title: "Brown Student Radio Website",
@@ -57,7 +57,7 @@ export default function ProjectsView() {
       description:
         "A fresh, accessible redesign for BSR with live updates, schedule browsing, and DJ blogs. Project for Fullstack@Brown Fall 2024.",
       repo: "https://brownstudentradio.vercel.app/",
-      image: "/projects/radio.png",
+      image: `${process.env.NEXT_PUBLIC_BASE_PATH}/projects/radio.png`,
     },
     {
       title: "Project OLEEP",
@@ -65,14 +65,14 @@ export default function ProjectsView() {
       description:
         "Central hub for mentorship resources, docs, and scheduling to streamline volunteer workflows. Project for Fullstack@Brown Spring 2025.",
       repo: "https://github.com/fullstackatbrown/project-oleep",
-      image: "/projects/oleep.png",
+      image: `${process.env.NEXT_PUBLIC_BASE_PATH}/projects/oleep.png`,
     },
     {
       title: "This website!",
       highlight: "Personal website",
       description:
         "Portfolio website to showcase projects, include information about myself, and make contact easier.",
-      image: "/projects/personal_website.png",
+      image: `${process.env.NEXT_PUBLIC_BASE_PATH}/projects/personal_website.png`,
     },
     {
       title: "Sketch!",
@@ -80,7 +80,7 @@ export default function ProjectsView() {
       description:
         "A playful canvas for quick doodles; simple but very fun!",
       repo: "https://github.com/loang-chiang/Sketch",
-      image: "/projects/sketch.png",
+      image: `${process.env.NEXT_PUBLIC_BASE_PATH}/projects/sketch.png`,
     },
     {
       title: "Michi",
@@ -88,7 +88,7 @@ export default function ProjectsView() {
       description:
         "Cat-themed tic-tac-toe that tracks wins per player and allows for a simple, good time",
       repo: "https://github.com/loang-chiang/Michi",
-      image: "/projects/michi.png",
+      image: `${process.env.NEXT_PUBLIC_BASE_PATH}/projects/michi.png`,
     },
   ];
 

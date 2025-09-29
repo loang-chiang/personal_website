@@ -156,7 +156,7 @@ export default function AboutView() {
                 className="relative w-[240px] aspect-[3/4] overflow-hidden rounded-2xl border shadow justify-self-center md:justify-self-end"
                 style={{ borderColor: p.accent }}
               >
-                <Image src="/me.jpg" alt="Photo of Loang" fill className="object-cover" priority />
+                <Image src={`${process.env.NEXT_PUBLIC_BASE_PATH}/me.jpg`} alt="Photo of Loang" fill className="object-cover" priority />
               </div>
 
               <div className="text-center md:text-left md:max-w-[560px] justify-self-center md:justify-self-start">
