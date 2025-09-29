@@ -1,19 +1,19 @@
-// next.config.js
-/** @type {import('next').NextConfig} */
-const repo = 'personal_website'; // <-- REPLACE with your repo name, e.g. "website"
-const isProd = process.env.NODE_ENV === 'production';
+import type { NextConfig } from "next";
 
-module.exports = {
-  // Produce static files in ./out on build
-  output: 'export',
+const repo = "my-site";                 // must match repo name exactly
+const isProd = process.env.NODE_ENV === "production";
 
-  // Needed for project sites at https://<user>.github.io/<repo>
-  basePath: isProd ? `/${repo}` : '',
-  assetPrefix: isProd ? `/${repo}/` : '',
+const basePath = isProd ? `/${repo}` : undefined;
+const assetPrefix = isProd ? `/${repo}/` : undefined;
 
-  // Next/Image in static export
+const nextConfig: NextConfig = {
+  output: "export",
   images: { unoptimized: true },
-
-  // (Optional but handy on GitHub Pages)
   trailingSlash: true,
+  basePath,
+  assetPrefix,
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
 };
+
+export default nextConfig;

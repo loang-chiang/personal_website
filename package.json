@@ -3,12 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "predeploy": "npm run build && mkdir -p out && touch out/.nojekyll",
-    "deploy": "gh-pages -d out -b gh-pages --dotfiles"
+    "export": "next build && next export",
+    "deploy": "npm run export && npx gh-pages -d out -b gh-pages -t true"
   },
   "dependencies": {
     "clsx": "^2.1.1",

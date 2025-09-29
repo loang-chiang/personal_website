@@ -1,7 +1,13 @@
+// src/components/PaletteProvider.tsx
 "use client";
 
 import React, {
-  createContext, useContext, useEffect, useLayoutEffect, useMemo, useState,
+  createContext,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
 } from "react";
 import { PALETTES, PaletteName } from "@/lib/palettes";
 
@@ -14,43 +20,44 @@ type Ctx = {
 };
 
 const STORAGE_KEY = "palette-choice";
-const Ctx = createContext<Ctx | null>(null);
+const CtxObj = createContext<Ctx | null>(null);
 
-export function PaletteProvider({
-  children,
-  initialPalette = "Vintage",
-}: {
-  children: React.ReactNode;
-  initialPalette?: PaletteName;
-}) {
-  // Seed from the server-provided value so SSR and first client render match
-  const [palette, setPalette] = useState<PaletteName>(initialPalette);
+export function PaletteProvider({ children }: { children: React.ReactNode }) {
+  const [palette, setPalette] = useState<PaletteName>("Vintage");
   const [ready, setReady] = useState(false);
 
-  // After mount, prefer localStorage if it exists (keeps old users’ choice)
+  // Read saved palette after mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY) as PaletteName | null;
-      if (saved && PALETTES[saved] && saved !== palette) setPalette(saved);
+      if (saved && PALETTES[saved]) setPalette(saved);
     } finally {
       setReady(true);
     }
   }, []);
 
-  // Keep CSS var in sync BEFORE paint (prevents overlay/intro color flash)
+  // Keep CSS vars in sync BEFORE paint (prevents color flash)
   useLayoutEffect(() => {
-    const accent = PALETTES[palette].accent;
-    document.documentElement.style.setProperty("--accent", accent);
+    const def = PALETTES[palette];
+    const root = document.documentElement;
+
+    root.style.setProperty("--accent", def.accent);
+    root.style.setProperty("--header-bg", def.headerBg ?? "white");
+    root.style.setProperty("--header-border", def.headerBorder ?? "#ddd");
+
+    const [g0, g1 = def.colors[0], g2 = def.colors[0]] = def.colors;
+    root.style.setProperty("--grad-0", g0);
+    root.style.setProperty("--grad-1", g1);
+    root.style.setProperty("--grad-2", g2);
+
+    root.setAttribute("data-palette", palette);
+
+    try {
+      localStorage.setItem(STORAGE_KEY, palette);
+    } catch {}
   }, [palette]);
 
-  // Persist to both localStorage and cookie so SSR can pick it up next time
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, palette); } catch {}
-    // 1 year, Lax
-    document.cookie = `palette-choice=${palette}; Path=/; Max-Age=31536000; SameSite=Lax`;
-  }, [palette]);
-
-  const value = useMemo(
+  const value = useMemo<Ctx>(
     () => ({
       palette,
       setPalette,
@@ -61,11 +68,12 @@ export function PaletteProvider({
     [palette, ready]
   );
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+  return <CtxObj.Provider value={value}>{children}</CtxObj.Provider>;
 }
 
 export function usePalette() {
-  const ctx = useContext(Ctx);
-  if (!ctx) throw new Error("usePalette must be used within <PaletteProvider>");
+  const ctx = useContext(CtxObj);
+  if (!ctx) throw new Error("usePalette must be used within PaletteProvider");
   return ctx;
 }
+
