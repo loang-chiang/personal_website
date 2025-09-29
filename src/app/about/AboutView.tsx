@@ -224,7 +224,7 @@ export default function AboutView() {
           </section>
 
           {/* Courses (no dates, color-coded by category) */}
-          <div className="mt-8">
+          <div className="mt-8 mb-12">
             <CoursesSection
                 title="Courses"
                 courses={courses}

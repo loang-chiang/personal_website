@@ -1,4 +1,3 @@
-// app/contact/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -105,6 +104,7 @@ function ActionButton(props: ActionButtonProps) {
 /* ───────────────────── Page ───────────────────── */
 export default function ContactView() {
   const { palette, setPalette, p, palettes } = usePalette();
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
   // keep overlay color synced
   useEffect(() => {
@@ -198,7 +198,7 @@ export default function ContactView() {
             alignContent: "start",
         }}
       >
-        <section className="mx-auto w-full max-w-xl px-6 sm:px-8 pt-4 md:pt-6 pb-16 md:pb-20">
+        <section className="mx-auto w-full max-w-xl px-6 sm:px-8 pt-8 md:pt-8 pb-16 md:pb-20">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -235,7 +235,7 @@ export default function ContactView() {
                 <span>Book a 15-min chat</span>
               </ActionButton>
               <div className="grid grid-cols-2 gap-2">
-                <ActionButton as="a" href="/Loang_Chiang_Resume.pdf" variant="outline" accent={p.accent}>
+                <ActionButton as="a" href={`${basePath}/Loang_Chiang_Resume.pdf`} variant="outline" accent={p.accent}>
                   <DownloadIcon />
                   <span>Resume</span>
                 </ActionButton>

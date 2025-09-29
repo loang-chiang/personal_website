@@ -134,7 +134,7 @@ export default function ProjectsView() {
               ))}
             </div>
 
-            <div className="mt-12">
+            <div className="mt-12 mb-8">
               <FancyButton href="/" variant="outline" accent={p.accent}>
                 ← Back Home
               </FancyButton>
