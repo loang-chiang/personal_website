@@ -185,7 +185,7 @@ export default function AboutView() {
                   technology that connects people and helps solve real problems!
                 </p>
                 <p className="mt-4 opacity-80">
-                  My interests span product, engineering, and human-computer interaction—where I get to blend technical skills with creativity and design.
+                  My interests span product, engineering, and human-computer interaction, where I get to blend technical skills with creativity and design.
                   I’m excited to collaborate, learn from others, and build products that make an impact!
                 </p>
                 <ul className="mt-5 grid gap-2 text-sm">

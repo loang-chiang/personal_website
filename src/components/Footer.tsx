@@ -3,9 +3,8 @@
 export default function Footer() {
   return (
     <footer
-      className="fixed bottom-0 left-0 right-0 z-30 border-t supports-[backdrop-filter]:backdrop-blur-sm"
+      className="relative md:fixed bottom-0 left-0 right-0 z-30 border-t supports-[backdrop-filter]:backdrop-blur-sm"
       style={{
-        // falls back to header vars so your palettes still work
         backgroundColor: "var(--footer-bg, var(--header-bg, white))",
         borderColor: "var(--header-border, #ddd)",
       }}
@@ -21,7 +20,6 @@ export default function Footer() {
           </a>
         </div>
       </div>
-      {/* iOS safe-area shim (no height on most desktops) */}
       <div className="h-[env(safe-area-inset-bottom)]" />
     </footer>
   );
