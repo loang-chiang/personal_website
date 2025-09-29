@@ -232,7 +232,7 @@ export default function ContactView() {
                 accent={p.accent}
               >
                 <CalendarIcon />
-                <span>Book a 15-min chat</span>
+                <span>Book a 30-min boba chat</span>
               </ActionButton>
               <div className="grid grid-cols-2 gap-2">
                 <ActionButton as="a" href={`${basePath}/Loang_Chiang_Resume.pdf`} variant="outline" accent={p.accent}>

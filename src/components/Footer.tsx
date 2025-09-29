@@ -12,12 +12,22 @@ export default function Footer() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 sm:py-5 text-sm opacity-80">
         <p>© {new Date().getFullYear()} Loang Chiang. Built with React + Tailwind.</p>
         <div className="flex items-center gap-3">
-          <a href="#" className="underline" style={{ color: "var(--accent)" }}>
-            GitHub
-          </a>
-          <a href="#" className="underline" style={{ color: "var(--accent)" }}>
-            LinkedIn
-          </a>
+            <a
+                href="https://github.com/loang-chiang"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: "var(--accent)" }}
+            >
+                GitHub
+            </a>
+            <a
+                href="https://www.linkedin.com/in/loang-chiang-0346622ab/"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: "var(--accent)" }}
+            >
+                LinkedIn
+            </a>
         </div>
       </div>
       <div className="h-[env(safe-area-inset-bottom)]" />
