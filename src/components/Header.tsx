@@ -1,3 +1,4 @@
+
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,6 +26,22 @@ function CircleMark({ color, size = 32 }: { color: string; size?: number }) {
   );
 }
 
+function MenuIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M3 12h18M3 6h18M3 18h18" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M18 6L6 18M6 6l12 12" />
+    </svg>
+  );
+}
+
 const OVERLAY_IN = { duration: 0.6, ease: [0.16, 1, 0.3, 1] };
 
 export default function Header({ accent, palette, setPalette, palettes }: HeaderProps) {
@@ -37,6 +54,7 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
   }, [accent]);
 
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // overlay state
   const [overlayOn, setOverlayOn] = useState(false);
@@ -50,12 +68,12 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
       navLockRef.current = false;
       navTargetRef.current = null;
     }
+    setMobileMenuOpen(false); // Close mobile menu on route change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   const normalizePath = (p: string) => {
     try {
-      // Strip query/hash and trailing slashes
       const u = new URL(p, typeof window !== "undefined" ? window.location.origin : "http://localhost");
       const clean = u.pathname.replace(/\/+$/g, "") || "/";
       return clean;
@@ -83,25 +101,16 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
   };
 
   function handleNavClick(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
-    // External links: allow default
     if (!isInternalPath(href)) return;
-
-    // Hash links: allow default
     if (isHashLink(href)) return;
-
-    // Same route: do nothing (no overlay, no navigation)
     if (isSamePath(href)) {
       e.preventDefault();
       return;
     }
-
-    // Going home: let Home run its own intro; no overlay here
     if (normalizePath(href) === "/") {
       try { sessionStorage.setItem("homeIntro", "1"); } catch {}
-      return; // allow Link to navigate normally
+      return;
     }
-
-    // Internal, different route → run overlay then push
     e.preventDefault();
     if (navLockRef.current) return;
     navLockRef.current = true;
@@ -109,9 +118,14 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
     setOverlayOn(true);
   }
 
+  const navLinks = [
+    { name: "Projects", href: "/projects" },
+    { name: "About", href: "/about" },
+    { name: "Contact", href: "/contact" },
+  ];
+
   return (
     <>
-      {/* Route-cover overlay */}
       <AnimatePresence>
         {overlayOn && (
           <motion.div
@@ -127,7 +141,6 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
               try { sessionStorage.setItem("routeCovered", "1"); } catch {}
               navTargetRef.current = null;
               router.push(href);
-              // no need to setOverlayOn(false); next page will mount
             }}
           />
         )}
@@ -143,8 +156,6 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
             <CircleMark color={accent} size={32} />
-
-            {/* Brand → home: let Home play intro. If already on '/', prevent. */}
             <Link
               href="/"
               className="font-semibold tracking-wide hover:underline"
@@ -163,12 +174,9 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
             </Link>
           </div>
 
+          {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            {[
-              { name: "Projects", href: "/projects" },
-              { name: "About", href: "/about" },
-              { name: "Contact", href: "/contact" }, // use full page for consistency
-            ].map((item) => {
+            {navLinks.map((item) => {
               const current = isSamePath(item.href);
               return (
                 <Link
@@ -180,7 +188,6 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
                   onClick={(e) => handleNavClick(e, item.href)}
                   aria-current={current ? "page" : undefined}
                 >
-                  {/* hover fill */}
                   <motion.div
                     className="absolute inset-0 rounded-lg"
                     style={{ backgroundColor: accent }}
@@ -191,7 +198,6 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
                     }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
                   />
-                  {/* label */}
                   <motion.span
                     className="relative z-10"
                     animate={{ color: hoveredNav === item.name && !current ? accent : "inherit" }}
@@ -199,7 +205,6 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
                   >
                     {item.name}
                   </motion.span>
-                  {/* underline */}
                   <motion.div
                     className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
                     style={{ backgroundColor: accent }}
@@ -212,35 +217,79 @@ export default function Header({ accent, palette, setPalette, palettes }: Header
             })}
           </nav>
 
-          {/* Palette selector */}
-          <motion.select
-            value={palette}
-            onChange={(e) => setPalette(e.target.value)}
-            className="rounded-xl border px-3 py-1 text-sm transition-all duration-200"
-            whileHover={{ scale: 1.05 }}
-            whileFocus={{ scale: 1.05 }}
-            style={{ borderColor: accent } as any}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = accent;
-              e.currentTarget.style.boxShadow = `0 0 0 2px ${accent}20`;
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = "var(--header-border, #ddd)";
-              e.currentTarget.style.boxShadow = "none";
-            }}
-          >
-            {palettes.map((k) => (
-              <option key={k} value={k}>
-                {k}
-              </option>
-            ))}
-          </motion.select>
+          <div className="flex items-center gap-3">
+            {/* Palette selector */}
+            <motion.select
+              value={palette}
+              onChange={(e) => setPalette(e.target.value)}
+              className="rounded-xl border px-3 py-1 text-sm transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileFocus={{ scale: 1.05 }}
+              style={{ borderColor: accent } as any}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = accent;
+                e.currentTarget.style.boxShadow = `0 0 0 2px ${accent}20`;
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--header-border, #ddd)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            >
+              {palettes.map((k) => (
+                <option key={k} value={k}>
+                  {k}
+                </option>
+              ))}
+            </motion.select>
+
+            {/* Mobile menu button */}
+            <button
+              className="md:hidden p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.nav
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="md:hidden overflow-hidden border-t"
+              style={{ borderColor: "var(--header-border, #ddd)" }}
+            >
+              <div className="px-6 py-4 space-y-2">
+                {navLinks.map((item) => {
+                  const current = isSamePath(item.href);
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                        current ? "opacity-60 pointer-events-none" : ""
+                      }`}
+                      style={{
+                        backgroundColor: current ? `${accent}20` : "transparent",
+                        color: current ? accent : "inherit",
+                      }}
+                      onClick={(e) => handleNavClick(e, item.href)}
+                      aria-current={current ? "page" : undefined}
+                    >
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            </motion.nav>
+          )}
+        </AnimatePresence>
       </motion.header>
     </>
   );
 }
-
-
-
-

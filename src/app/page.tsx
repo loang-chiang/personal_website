@@ -65,12 +65,20 @@ export default function HomePage() {
   // ---------------- NAV OVERLAY (cover only, then push) ----------------
   const router = useRouter();
   const [slideOverlay, setSlideOverlay] = useState(false);
+  const navTargetRef = useRef<string | null>(null);
 
   const OVERLAY_IN = { duration: 0.6, ease: [0.16, 1, 0.3, 1] } as const;
 
   const goProjects = () => {
+    navTargetRef.current = "/projects";
     setSlideOverlay(true);
   };
+  
+  const goContact = () => {
+    navTargetRef.current = "/contact";
+    setSlideOverlay(true);
+  };
+
 
   return (
     <div className={`${p.bg} ${p.text} min-h-screen flex flex-col antialiased overflow-x-hidden relative`}>
@@ -92,9 +100,12 @@ export default function HomePage() {
             animate={{ y: 0 }}
             transition={OVERLAY_IN}
             onAnimationComplete={() => {
-              try { sessionStorage.setItem("routeCovered", "1"); } catch {}
-              router.push("/projects");
-              // No local exit — Projects page will do the reveal.
+              const target = navTargetRef.current;
+              if (target) {
+                try { sessionStorage.setItem("routeCovered", "1"); } catch {}
+                router.push(target);
+                navTargetRef.current = null;
+              }
             }}
           />
         )}
@@ -114,12 +125,13 @@ export default function HomePage() {
 
         {/* Foreground content */}
         <div className="relative z-10">
-          <motion.section
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="mx-auto flex max-w-6xl flex-col items-center justify-center px-6 py-24 text-center mt-32"
-          >
+        <motion.section
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="mx-auto flex max-w-6xl flex-col items-center justify-center px-6 py-24 text-center"
+          style={{ minHeight: 'calc(100vh - 120px)' }}
+        >
             <h1 className="mt-6 text-5xl/tight font-extrabold md:text-7xl/tight">
               Hi, I’m{" "}
               <span
@@ -162,7 +174,12 @@ export default function HomePage() {
                 Projects
               </FancyButton>
 
-              <FancyButton href="#contact" variant="outline" accent={p.accent}>
+              <FancyButton 
+                variant="outline" 
+                accent={p.accent}
+                onMouseEnter={() => router.prefetch("/contact")}
+                onClick={goContact}
+              >
                 Contact
               </FancyButton>
             </motion.div>
